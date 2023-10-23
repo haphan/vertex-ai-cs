@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM acidrain/python-poetry:3.9-slim
 
 WORKDIR /app
 
@@ -9,12 +9,12 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone YOUR_GIT_HUB_REPO .
+RUN git clone https://github.com/haphan/vertex-ai-cs.git .
 
-RUN pip3 install -r requirements.txt
+RUN poetry install -vvv
 
 EXPOSE 8080
 
 HEALTHCHECK CMD curl --fail http://localhost:8080/_stcore/health
 
-ENTRYPOINT ["streamlit", "run", "main.py", "--server.port=8080", "--server.address=0.0.0.0"]
+ENTRYPOINT ["poetry", "run", "streamlit", "run", "main.py", "--server.port=8080", "--server.address=0.0.0.0"]
