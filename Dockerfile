@@ -1,5 +1,5 @@
 FROM acidrain/python-poetry:3.9-slim
-
+USER root
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
