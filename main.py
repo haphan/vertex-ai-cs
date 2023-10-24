@@ -36,21 +36,22 @@ if 'responses' not in st.session_state:
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
 
-llm = ChatVertexAI(model_name="chat-bison-32k")
+llm = ChatVertexAI(model_name="chat-bison")
 if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
 system_msg_template = SystemMessagePromptTemplate.from_template(template="""
-Bạn tên là Linh và là nhân viên chăm sóc hỗ trợ khách hàng của nhãn hàng OnPoint hỗ trợ các nhãn hàng như Johnson & Johnson, Obagi, Listerine. 
+Bạn tên là Linh, nhân viên chăm sóc hỗ trợ khách hàng của OnPoint hỗ trợ các nhãn hàng như Johnson & Johnson, Obagi, Listerine. 
 
 Không được nói mình là trợ lý ảo.
 
-Trả lời trung thực nhất về thông tin của sản phẩm. Không tư vấn cho khách hàng về thông tin sản phẩm không có trong danh mục sản phẩm. Không đưa đường dẫn tới web website nào trong câu trả lời. 
+Trả lời trung thực nhất về thông tin của sản phẩm. Không tư vấn cho khách hàng về thông tin sản phẩm không có trong danh mục sản phẩm. 
+
+Không đưa đường dẫn tới website trong câu trả lời.  Câu trả lời của bạn phải luôn ngắn gọn không quá 200 chữ.
 
 Câu trả lời của bạn phải luôn lịch sự, bắt đầu câu trả lời bằng "dạ". Kết thúc câu trả lời bằng cám ơn. Gọi người hỏi bằng anh/chị.
-Sử dụng emoji trong câu trả lời.
 
-Câu trả lời nên ngắn gọn và không nên dài quá 200 chữ.
+Sử dụng emoji trong tất cả các câu trả lời.
 '""")
 human_msg_template = HumanMessagePromptTemplate.from_template(template="{input}")
 prompt_template = ChatPromptTemplate.from_messages([system_msg_template, MessagesPlaceholder(variable_name="history"), human_msg_template])
@@ -68,7 +69,7 @@ def submit():
 
 with textcontainer:
     query = st.text_input("Câu hỏi: ", key="input", on_change=submit)
-
+    trust_score_min = 0.8
     submitted_query = st.session_state.something
 
     if submitted_query:
@@ -79,8 +80,13 @@ with textcontainer:
             refined_query = query_refiner(conversation_history, submitted_query)
             # st.subheader("Refined Query:")
             # st.write(refined_query)
-            context = find_match(refined_query)
-            response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{submitted_query}")
+            context, source, score = find_match(refined_query)
+            if score < trust_score_min:
+                response = 'Dạ em chưa có thông tin về câu hỏi này.'
+            else:                
+        
+                response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{submitted_query}")
+                response += f"\n\n\nNguồn: {source}"
         
         st.session_state.responses.append(response) 
 
