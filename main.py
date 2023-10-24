@@ -36,7 +36,7 @@ if 'responses' not in st.session_state:
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
 
-llm = ChatVertexAI(model_name="chat-bison")
+llm = ChatVertexAI(model_name="chat-bison", max_output_tokens=1024)
 if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
