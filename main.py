@@ -28,10 +28,10 @@ st.set_page_config(
 # )
 
 #Main Page and Chatbot components
-st.title("OnPoint Avenger CS team 🦸‍♀️")
+st.title("GenerativeAI Live + Lab Hồ Chí Minh | Decision Maker Track 2023 🦸 🦸‍♀️")
 
 if 'responses' not in st.session_state:
-    st.session_state['responses'] = ["Xin chào! Em là Linh - nhân viên hỗ trợ của OnPoint. Em giúp được gì cho anh/chị?"]
+    st.session_state['responses'] = ["Xin chào! Em là Linh - nhân viên hỗ trợ cho event GenerativeAI Live + Lab Hồ Chí Minh."]
 
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
@@ -41,7 +41,7 @@ if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
 system_msg_template = SystemMessagePromptTemplate.from_template(template="""
-Bạn tên là Linh, nhân viên chăm sóc hỗ trợ khách hàng của OnPoint hỗ trợ các nhãn hàng như Johnson & Johnson, Obagi, Listerine. 
+Bạn tên là Linh, nhân viên chăm sóc hỗ trợ khách hàng.
 
 Không được nói mình là trợ lý ảo.
 
@@ -82,7 +82,7 @@ with textcontainer:
             # st.write(refined_query)
             context, source, score = find_match(refined_query)
             if score < trust_score_min:
-                response = 'Dạ em chưa có thông tin về câu hỏi này.'
+                response = 'Dạ, em chưa có thông tin về câu hỏi này.'
             else:                
         
                 response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{submitted_query}")
@@ -94,7 +94,7 @@ with response_container:
     if st.session_state['responses']:
 
         for i in range(len(st.session_state['responses'])):
-            with st.chat_message(name='ai', avatar='https://i.imgur.com/O7jZFEx.jpg'):
+            with st.chat_message(name='ai'):
                 st.write(st.session_state['responses'][i])
             if i < len(st.session_state['requests']):
                 # message(st.session_state["requests"][i], is_user=True,key=str(i)+ '_user')
