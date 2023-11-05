@@ -57,6 +57,7 @@ def run_questions(questions: List[str]) -> List[QuestionAnswerModel]:
 
     for q in questions:
         print(f'>>>>>> Question: {q}')
+        print(f'>>>>> History: {buff_memory.buffer_as_str}')
         refined_query = query_refiner(buff_memory.buffer_as_str, q)
 
         context, source, score = find_match(refined_query)

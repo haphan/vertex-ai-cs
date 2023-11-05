@@ -36,10 +36,10 @@ def find_match(input: str) -> list[str, str, float]:
 def query_refiner(conversation: str, query: str):
     model = TextGenerationModel.from_pretrained("text-bison@001")
     response = model.predict(
-    prompt=f"Dưới đây là lịch sử hội giữa khách hàng và nhân viên chăm sóc khách hàng, "
-            f"tạo câu hỏi rút gọn và liên quan nhất để khách hàng có thể dùng để hỏi nhân viên chăm sóc khách hàng.\n\n"
-            f"Lịch sử hội thoại: \n=============\n{conversation}\n=============\n\nCâu hỏi: \n=============\n{query}\n=============\n\nCâu hỏi rút gọn:",
-    temperature=0.8,
+    prompt=f"Dưới đây là lịch sử nói chuyện giữa khách hàng và nhân viên chăm sóc khách hàng, "
+            f"tóm tắt câu hỏi của khách hàng, bổ sung tên sản phẩm đang được tư vấn nếu có.\n\n"
+            f"Lịch sử nói chuyện: \n=============\n{conversation}\n=============\n\nKhách hàng: \n=============\n{query}\n=============\n\nTóm tắt:",
+    temperature=0.7,
     top_p=0.95,
     top_k=40
     )
