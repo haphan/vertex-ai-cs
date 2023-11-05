@@ -6,12 +6,13 @@ import vertexai
 import streamlit as st
 from vertexai.language_models import TextGenerationModel
 from vertexai.language_models import TextEmbeddingModel
-
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.memory.chat_memory import BaseChatMemory
 
 load_dotenv()
 pp = pprint.PrettyPrinter(indent=4)
 
-model= TextEmbeddingModel.from_pretrained("textembedding-gecko@001")
+model= TextEmbeddingModel.from_pretrained("textembedding-gecko-multilingual@latest")
 pinecone.init(api_key=os.getenv('PINECONE_API_KEY'), environment=os.getenv('PINECONE_ENV'))
 index = pinecone.Index(os.getenv('PINECONE_IDX'))
 
@@ -32,21 +33,23 @@ def find_match(input: str) -> list[str, str, float]:
     source = result['matches'][0]['metadata']['source']
     return (context, source, score)
 
-def query_refiner(conversation, query):
+def query_refiner(conversation: str, query: str):
     model = TextGenerationModel.from_pretrained("text-bison@001")
     response = model.predict(
-    prompt=f"Given the following user query and conversation log, formulate a question that would be the most relevant to provide the user with an answer from a knowledge base.\n\nCONVERSATION LOG: \n{conversation}\n\nQuery: {query}\n\nRefined Query:",
-    temperature=0.2,
-    top_p=0.5,
-    top_k=20
+    prompt=f"Dưới đây là lịch sử hội giữa khách hàng và nhân viên chăm sóc khách hàng, "
+            f"tạo câu hỏi rút gọn và liên quan nhất để khách hàng có thể dùng để hỏi nhân viên chăm sóc khách hàng.\n\n"
+            f"Lịch sử hội thoại: \n=============\n{conversation}\n=============\n\nCâu hỏi: \n=============\n{query}\n=============\n\nCâu hỏi rút gọn:",
+    temperature=0.8,
+    top_p=0.95,
+    top_k=40
     )
-    return response.text
 
+    return response.text
 
 def get_conversation_history():
     conversation_string = ""
     for i in range(len(st.session_state['responses'])-1):
         
-        conversation_string += "Human: "+st.session_state['requests'][i] + "\n"
-        conversation_string += "Bot: "+ st.session_state['responses'][i+1] + "\n"
+        conversation_string += "Khách hàng: "+st.session_state['requests'][i] + "\n"
+        conversation_string += "Nhân viên chăm sóc khách hàng: "+ st.session_state['responses'][i+1] + "\n"
     return conversation_string
