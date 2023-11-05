@@ -12,13 +12,14 @@ from langchain.prompts import (
     ChatPromptTemplate,
     MessagesPlaceholder
 )
-load_dotenv()
+from settings import Settings
+
+settings = Settings()
 
 #Page Config
 st.set_page_config(
      layout="wide",
-     page_title="JS Lab",
-     page_icon="https://api.dicebear.com/5.x/bottts-neutral/svg?seed=gptLAb"
+     page_title=settings.streamlit_page_title,
 )
 
 #Sidebar
@@ -28,31 +29,25 @@ st.set_page_config(
 # )
 
 #Main Page and Chatbot components
-st.title("GenerativeAI Live + Lab Hồ Chí Minh | Decision Maker Track 2023 🦸 🦸‍♀️")
+st.title(settings.streamlit_page_title)
 
 if 'responses' not in st.session_state:
-    st.session_state['responses'] = ["Xin chào! Em là Linh - nhân viên hỗ trợ cho event GenerativeAI Live + Lab Hồ Chí Minh."]
+    st.session_state['responses'] = [settings.streamlit_welcome_msg]
 
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
 
-llm = ChatVertexAI(model_name="chat-bison", max_output_tokens=1024)
+llm = ChatVertexAI(model_name=settings.llm_model_chat, 
+        max_output_tokens=settings.llm_max_output_tokens, 
+        temperature=settings.llm_temperature, 
+        top_p=settings.llm_top_p,
+        top_k=settings.llm_top_k
+        )
+
 if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
-system_msg_template = SystemMessagePromptTemplate.from_template(template="""
-Bạn tên là Linh, nhân viên chăm sóc hỗ trợ khách hàng.
-
-Không được nói mình là trợ lý ảo.
-
-Trả lời trung thực nhất về thông tin của sản phẩm. Không tư vấn cho khách hàng về thông tin sản phẩm không có trong danh mục sản phẩm. 
-
-Không đưa đường dẫn tới website trong câu trả lời.  Câu trả lời của bạn phải luôn ngắn gọn không quá 200 chữ.
-
-Câu trả lời của bạn phải luôn lịch sự, bắt đầu câu trả lời bằng "dạ". Kết thúc câu trả lời bằng cám ơn. Gọi người hỏi bằng anh/chị.
-
-Sử dụng emoji trong tất cả các câu trả lời.
-'""")
+system_msg_template = SystemMessagePromptTemplate.from_template(template=settings.prompt_template.system)
 human_msg_template = HumanMessagePromptTemplate.from_template(template="{input}")
 prompt_template = ChatPromptTemplate.from_messages([system_msg_template, MessagesPlaceholder(variable_name="history"), human_msg_template])
 conversation = ConversationChain(memory=st.session_state.buffer_memory, prompt=prompt_template, llm=llm, verbose=True)
@@ -69,7 +64,6 @@ def submit():
 
 with textcontainer:
     query = st.text_input("Câu hỏi: ", key="input", on_change=submit)
-    trust_score_min = 0.8
     submitted_query = st.session_state.something
 
     if submitted_query:
@@ -78,14 +72,25 @@ with textcontainer:
         with st.spinner("Đang trả lời..."):
             conversation_history = get_conversation_history()
             refined_query = query_refiner(conversation_history, submitted_query)
+            print(f'Refined query: {refined_query}')
             # st.subheader("Refined Query:")
             # st.write(refined_query)
             context, source, score = find_match(refined_query)
-            if score < trust_score_min:
-                response = 'Dạ, em chưa có thông tin về câu hỏi này.'
+            if score < settings.trust_score_min:
+                response = settings.prompt_template.default_no_answer
             else:                
         
-                response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{submitted_query}")
+                response = conversation.predict(
+                                        input=f""
+                                          f"Ngữ cảnh:\n"
+                                          f"================\n"
+                                          f"{context}\n"
+                                          f"================\n"
+                                          f"Câu hỏi:\n"
+                                          f"================\n"
+                                          f"{submitted_query} \n"
+                                          f"================\n"
+                                          f"Trả lời:\n")
                 response += f"\n\n\nNguồn: {source}"
         
         st.session_state.responses.append(response) 
