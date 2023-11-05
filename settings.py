@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     pinecone_idx: str
 
     streamlit_page_title: str = 'OnPoint Customer Service'
-    streamlit_header: str = 'GenerativeAI Live + Lab Hồ Chí Minh | Decision Maker Track 2023 🦸 🦸‍♀️'
+    streamlit_header: str = 'OnPoint Customer Service 🦸 🦸‍♀️'
     streamlit_welcome_msg: str = 'Em là Linh - nhân viên hỗ trợ cho OnPoint. Em có thể giúp gì cho anh/chị?'
     
     prompt_template: PromptTemplateModel = PromptTemplateModel()
