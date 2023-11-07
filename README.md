@@ -1,3 +1,23 @@
+## Create venv for python
+
+(Optional) install poetry
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+
+# install dependencies
+poetry install
+
+# run
+bash run.sh
+```
+
 
 ## Authenticate GCP environment
 
