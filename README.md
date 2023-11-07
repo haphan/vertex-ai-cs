@@ -20,3 +20,10 @@ Output of tests are written to `tests_output/*.yaml`. To execute integration tes
 ```bash
 bash ./test.sh
 ```
+
+
+## Local docker build
+
+```bash
+docker build -t local/op-chat:latest .
+```
