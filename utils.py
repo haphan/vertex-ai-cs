@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import pinecone
 import vertexai
 import streamlit as st
+from streamlit.runtime.scriptrunner.script_run_context import get_script_run_ctx
 from vertexai.language_models import TextGenerationModel
 from vertexai.language_models import TextEmbeddingModel
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
@@ -53,3 +54,6 @@ def get_conversation_history():
         conversation_string += "Khách hàng: "+st.session_state['requests'][i] + "\n"
         conversation_string += "Nhân viên chăm sóc khách hàng: "+ st.session_state['responses'][i+1] + "\n"
     return conversation_string
+
+def streamlit_session():
+    return get_script_run_ctx().session_id    

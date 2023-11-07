@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 import streamlit as st
 # from streamlit_chat import message
 from utils import *
@@ -13,6 +14,7 @@ from langchain.prompts import (
     MessagesPlaceholder
 )
 from settings import Settings
+from persist import insert_bq
 
 settings = Settings()
 
@@ -33,6 +35,7 @@ st.title(settings.streamlit_page_title)
 
 if 'responses' not in st.session_state:
     st.session_state['responses'] = [settings.streamlit_welcome_msg]
+    print(streamlit_session())
 
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
@@ -72,9 +75,10 @@ with textcontainer:
         with st.spinner("Đang trả lời..."):
             conversation_history = get_conversation_history()
             refined_query = query_refiner(conversation_history, submitted_query)
+
+            print(f'Submitted query: {submitted_query}')
             print(f'Refined query: {refined_query}')
-            # st.subheader("Refined Query:")
-            # st.write(refined_query)
+
             context, source, score = find_match(refined_query)
             if score < settings.trust_score_min:
                 response = settings.prompt_template.default_no_answer
@@ -93,7 +97,18 @@ with textcontainer:
                                           f"Trả lời:\n")
                 response += f"\n\n\nNguồn: {source}"
         
+        
         st.session_state.responses.append(response) 
+
+        # Persist message after sending to client
+        if settings.store_chat_msg:
+            insert_bq(
+                session_id=streamlit_session(), 
+                dt=datetime.now(),
+                ask=submitted_query,
+                response=response,
+                ref=source
+            )
 
 with response_container:
     if st.session_state['responses']:

@@ -37,4 +37,6 @@ class Settings(BaseSettings):
     
     prompt_template: PromptTemplateModel = PromptTemplateModel()
 
+    store_chat_msg: bool = False
+    bq_table: str
 
